@@ -21,7 +21,8 @@ class UsersCommittees extends Base
 
     public function searchByUserAndCommittee($user_id, $committee_id)
     {
-        return $this->model::where('user_id', $user_id)
+        return $this->model
+            ::where('user_id', $user_id)
             ->where('committee_id', $committee_id)
             ->first();
     }

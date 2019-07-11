@@ -84,8 +84,8 @@ class PersonContacts extends Controller
         if ($request->get($code)) {
             PersonContact::create([
                 'person_id' => $request->get('person_id'),
-                'contact_type_id' =>
-                    ContactType::where('code', $code)->first()->id,
+                'contact_type_id' => ContactType::where('code', $code)->first()
+                    ->id,
                 'contact' => $contact,
             ]);
         }

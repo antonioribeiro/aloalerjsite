@@ -47,7 +47,7 @@ class RemoteRequest
             throw $exception;
         }
         if (
-            is_null($array = json_decode((string) $response->getBody(), true))
+            is_null(($array = json_decode((string) $response->getBody(), true)))
         ) {
             abort('Invalid response');
         }

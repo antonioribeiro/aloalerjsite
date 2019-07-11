@@ -28,7 +28,8 @@ class Committees extends Base
 
     public function comboBoxItemsWithScope()
     {
-        return $this->model::permittedCommittees()
+        return $this->model
+            ::permittedCommittees()
             ->where('bio', '<>', '')
             ->get();
     }
@@ -47,7 +48,8 @@ class Committees extends Base
 
     public function searchByAll($name)
     {
-        return $this->model::orWhere('name', 'ilike', '%' . $name . '%')
+        return $this->model
+            ::orWhere('name', 'ilike', '%' . $name . '%')
             ->orWhere('president', 'ilike', '%' . $name . '%')
             ->orWhere('vice_president', 'ilike', '%' . $name . '%')
             ->get();
@@ -55,20 +57,16 @@ class Committees extends Base
 
     public function searchPresident($name)
     {
-        return $this->model::where(
-            'president',
-            'ilike',
-            '%' . $name . '%'
-        )->get();
+        return $this->model
+            ::where('president', 'ilike', '%' . $name . '%')
+            ->get();
     }
 
     public function searchVicePresident($name)
     {
-        return $this->model::where(
-            'vice_president',
-            'ilike',
-            '%' . $name . '%'
-        )->get();
+        return $this->model
+            ::where('vice_president', 'ilike', '%' . $name . '%')
+            ->get();
     }
 
     protected function emptyResponse($search = '')

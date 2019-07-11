@@ -44,7 +44,7 @@ class ImportCercred
         from historico
         where imported = false and historico.pessoa_id = {$person_id} and historico.historico_id not in (" .
                     implode(',', $exclude) .
-                    ");"
+                    ');'
             )
         );
     }
@@ -67,8 +67,7 @@ from historico
   left join action on action.action_id = action_historico.action_id
   left join action_type on action_type.action_type = action.action_type
 where  historico_propriedade_tipo.descricao is not null
-and historico.historico_id = ' .
-                    $historico_id
+and historico.historico_id = ' . $historico_id
             )
         );
 
@@ -113,10 +112,9 @@ and historico.historico_id = ' .
     private function inferAndFillMissinData()
     {
         Record::all()->each(function ($record) {
-            $history = $record->progresses->where(
-                'original_history_id',
-                $record->historico_id
-            )->first();
+            $history = $record->progresses
+                ->where('original_history_id', $record->historico_id)
+                ->first();
 
             if ($history) {
                 $history = json_decode(json_encode($history->toArray()));
@@ -131,8 +129,8 @@ and historico.historico_id = ' .
                     ),
                 ])->merge(json_decode(json_encode($action, true)));
 
-                $record->area_id = $this->inferAreaFromProtocol($history)
-                    ?: 999999;
+                $record->area_id =
+                    $this->inferAreaFromProtocol($history) ?: 999999;
 
                 $record->record_type_id = $this->inferRecordTypeFromProtocol(
                     $history
@@ -148,8 +146,8 @@ and historico.historico_id = ' .
                     )
                 )->first();
 
-                $record->created_at = $historico->data_inicio_atendimento
-                    ?: $record->created_at;
+                $record->created_at =
+                    $historico->data_inicio_atendimento ?: $record->created_at;
 
                 $record->save();
 
@@ -255,10 +253,9 @@ and historico.historico_id = ' .
                 $this->sanitize([
                     'original_history_id' => $history->historico_id,
                     'record_id' => $record->id,
-                    'progress_type_id' =>
-                        ProgressType::firstOrCreate([
-                            'name' => $history->historico_tipo_descricao,
-                        ])->id,
+                    'progress_type_id' => ProgressType::firstOrCreate([
+                        'name' => $history->historico_tipo_descricao,
+                    ])->id,
                     'created_by_id' => $history->historico_usuario_id_alteracao,
                     'original' => $history->historico_complemento,
                     'created_at' => $history->historico_data_inicio_atendimento,
@@ -288,8 +285,9 @@ and historico.historico_id = ' .
                 'record_type_id' => $protocol->pessoa_id,
                 'area_id' => $this->inferAreaFromProtocol($protocol) ?: 999999,
                 'record_action_id' => $this->inferActionFromProtocol($protocol),
-                'created_at' =>
-                    ($date = $this->inferDateFromProtocol($protocol)),
+                'created_at' => ($date = $this->inferDateFromProtocol(
+                    $protocol
+                )),
                 'updated_at' => $date,
             ])
         );
@@ -433,10 +431,9 @@ and historico.historico_id = ' .
     private function inferOriginFromProtocol($protocol)
     {
         if (isset($protocol->history_data[0])) {
-            $data = $protocol->history_data[0]->history_fields->where(
-                'historico_propriedade_tipo_descricao',
-                'Origem'
-            )->first();
+            $data = $protocol->history_data[0]->history_fields
+                ->where('historico_propriedade_tipo_descricao', 'Origem')
+                ->first();
 
             if (
                 $data instanceof \stdClass ||
@@ -640,11 +637,11 @@ and historico.historico_id = ' .
         $record = Record::create(
             $this->sanitize([
                 'person_id' => $person->id,
-                'record_type_id' =>
-                    RecordType::where('name', 'Outros')->first()->id,
+                'record_type_id' => RecordType::where('name', 'Outros')->first()
+                    ->id,
                 'area_id' => Area::where('name', 'ALÔ ALERJ')->first()->id,
-                'committee_id' =>
-                    Committee::where('name', 'ALÔ ALERJ')->first()->id,
+                'committee_id' => Committee::where('name', 'ALÔ ALERJ')->first()
+                    ->id,
             ])
         );
         $record->protocol = app(Records::class)->makeProtocolNumber(
@@ -654,11 +651,8 @@ and historico.historico_id = ' .
         $record->save();
         return $record;
     }
-    public function createProgressFromHistory(
-        $history,
-        $newProtocol,
-        $protocol
-    ) {
+    public function createProgressFromHistory($history, $newProtocol, $protocol)
+    {
         $history->history_fields = $this->getHistoryFields(
             $history->historico_id
         );
@@ -763,8 +757,10 @@ and historico.historico_id = ' .
                         'name' => $row->nome,
                         'email' => $row->nome . '@cercred.com.br',
                         'username' => $row->nome,
-                        'user_type_id' =>
-                            UserType::where('name', 'Usuario')->first()->id,
+                        'user_type_id' => UserType::where(
+                            'name',
+                            'Usuario'
+                        )->first()->id,
                         'password' => bcrypt($row->nome . $row->usuario_id),
                     ])
                 );
@@ -904,9 +900,8 @@ and historico.historico_id = ' .
                 PersonContact::create(
                     $this->sanitize([
                         'person_id' => $telefone->pessoa_id,
-                        'contact_type_id' => $type == 'celular'
-                            ? $mobileId
-                            : $phoneId,
+                        'contact_type_id' =>
+                            $type == 'celular' ? $mobileId : $phoneId,
                         'contact' => $telefone->ddd . $telefone->telefone,
                         'from' => $type == 'celular' ? 'pessoal' : $type,
                         'status' => $status,
@@ -1028,8 +1023,11 @@ and historico.historico_id = ' .
                         'spouse_name' => $person->nome_conjuge,
                         'main_occupation_id' => $person->ocupacao_principal,
                         'scholarship_id' => $person->escolaridade_id,
-                        'income' =>
-                            (float) str_replace('$', '', $person->renda),
+                        'income' => (float) str_replace(
+                            '$',
+                            '',
+                            $person->renda
+                        ),
                         'person_type_id' => $person->tipo_pessoa,
                         'created_at' => $person->inclusao,
                         'updated_by_id' => $person->usuario_id_alteracao,
@@ -1111,7 +1109,7 @@ from historico
 where historico.imported = false 
 and historico.{$field} in (" .
                     implode(',', $objetoId) .
-                    ");"
+                    ');'
             )
         );
     }
@@ -1210,13 +1208,11 @@ where historico_id = {$historyId}"
     function fixAccent($string)
     {
         return preg_replace_callback(
-            "/(.*)(&#[0-9]+)(.*)/",
+            '/(.*)(&#[0-9]+)(.*)/',
             function ($m) {
-                return (
-                    $m[1] .
-                    mb_convert_encoding($m[2] . ';', "UTF-8", "HTML-ENTITIES") .
-                    $m[3]
-                );
+                return $m[1] .
+                    mb_convert_encoding($m[2] . ';', 'UTF-8', 'HTML-ENTITIES') .
+                    $m[3];
             },
             $string
         );
